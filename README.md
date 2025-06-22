@@ -1,6 +1,6 @@
 # Temple Run CV - Enhanced Edition
 
-An advanced Temple Run-style endless runner game implemented using Python, OpenCV, and Pygame with semi-3D visual effects and enhanced gameplay mechanics.
+An advanced Temple Run-style endless runner game implemented using Python, OpenCV, and Pygame with semi-3D visual effects, advanced audio system, and **hand gesture control** for immersive gameplay.
 
 ## 🎮 Features
 
@@ -12,6 +12,20 @@ An advanced Temple Run-style endless runner game implemented using Python, OpenC
 - **Score tracking** with persistent high scores
 - **Lives system** with visual hearts display
 
+### 🤲 Hand Gesture Control (NEW!)
+- **Three control modes**: MediaPipe, OpenCV (phone camera), and keyboard simulation
+- **📱 Phone camera support** - Use your phone as a gesture camera via IP Webcam app
+- **OpenCV gesture recognition** - Advanced hand detection using computer vision
+- **Gesture controls**:
+  - ✊ **Fist/F key** = Jump
+  - ☝️ **Index finger/I key** = Crouch/slide  
+  - ✋ **Open palm/O key** = Idle/run
+- **Toggle control modes** - Switch between keyboard and gesture control (G key)
+- **Visual feedback** with gesture visualization window
+- **Compatible with Python 3.13** using OpenCV or keyboard gesture simulation
+- **Automatic fallback** - Works without MediaPipe or camera
+- **Phone camera setup** - Detailed guide for using phone as webcam
+
 ### Visual Effects
 - **Parallax scrolling background** with multiple layers for depth
 - **Semi-3D obstacle scaling** that creates perspective effects
@@ -21,9 +35,10 @@ An advanced Temple Run-style endless runner game implemented using Python, OpenC
 - **Gradient backgrounds** and lighting effects
 
 ### Audio System
-- **Background music** support
+- **Background music** support with fade in/out
 - **Sound effects** for jumping, coin collection, and collisions
-- **Volume control** for music and effects
+- **Volume control** and mute functionality for music and effects
+- **Modular sound manager** with error handling
 
 ### Advanced Features
 - **Multiple game states** (Menu, Playing, Paused, Game Over)
@@ -38,14 +53,14 @@ An advanced Temple Run-style endless runner game implemented using Python, OpenC
 - OpenCV (opencv-python-headless)
 - Pygame
 - NumPy
-- MediaPipe (optional, for future gesture controls)
+- Requests (for phone camera connectivity)
+- MediaPipe (optional, for gesture controls)
 
 ## 📦 Installation
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/saheli56/Temple-Run.git
-   cd Temple-Run
+   git clone https://github.com/saheli56/Temple-Run.git   cd Temple-Run
    ```
 
 2. Install dependencies:
@@ -53,13 +68,53 @@ An advanced Temple Run-style endless runner game implemented using Python, OpenC
    pip install -r requirements.txt
    ```
 
+3. **(Optional)** MediaPipe for camera-based gesture control:
+   ```bash
+   pip install mediapipe
+   ```
+   **Note**: MediaPipe requires Python 3.7-3.11. If unavailable, the game automatically uses OpenCV or keyboard gesture simulation.
+
+4. **(For Phone Camera)** Set up IP Webcam app:
+   - Install "IP Webcam" app on your Android phone
+   - Connect phone and computer to same WiFi network
+   - See [PHONE_CAMERA_SETUP.md](PHONE_CAMERA_SETUP.md) for detailed instructions
+
 ## 🎯 How to Play
 
-### Basic Controls
+### Keyboard Controls
 - **SPACE**: Jump over obstacles
+- **G**: Toggle gesture control mode
 - **P**: Pause/Resume game
+- **M**: Mute/unmute audio
 - **Q**: Quit game
 - **S**: Restart game (when game over)
+
+### 🤲 Gesture Controls (when enabled)
+
+#### 📱 Phone Camera Mode (OpenCV):
+- Set up IP Webcam app on your phone
+- Enter phone's IP address when prompted
+- **✊ Closed Fist**: Jump over obstacles
+- **☝️ Index Finger**: Crouch/slide under obstacles
+- **✋ Open Palm**: Normal running (idle)
+
+#### Camera-based (with MediaPipe):
+- **✊ Closed Fist**: Jump over obstacles
+- **☝️ Index Finger**: Crouch/slide under obstacles
+- **✋ Open Palm**: Normal running (idle)
+
+#### Keyboard Simulation (fallback):
+- **F key**: Fist gesture (Jump)
+- **I key**: Index finger gesture (Crouch)
+- **O key**: Open palm gesture (Idle)
+- **G**: Toggle back to keyboard mode
+
+**Gesture Control Tips**:
+- Press 'G' to toggle between control modes
+- For phone camera setup, see [PHONE_CAMERA_SETUP.md](PHONE_CAMERA_SETUP.md)
+- Camera mode: Good lighting and clear background
+- Keyboard mode: Use F/I/O keys for gestures
+- Visualization window shows current gesture
 
 ### Game Objective
 1. Run as far as possible while avoiding obstacles

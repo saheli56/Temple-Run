@@ -40,8 +40,8 @@ class GameUI:
         surface.blit(text_surface, position)
         return surface
     
-    def draw_game_hud(self, frame, score, coins, speed_multiplier, lives=3, sound_muted=False):
-        """Draw the main game HUD with sound status"""
+    def draw_game_hud(self, frame, score, coins, speed_multiplier, lives=3, sound_muted=False, gesture_control=False):
+        """Draw the main game HUD with sound and gesture control status"""
         # Score
         score_text = f"Score: {score:,}"
         self.draw_text_opencv(frame, score_text, self.score_pos, scale=0.8, thickness=2)
@@ -71,8 +71,22 @@ class GameUI:
         self.draw_text_opencv(frame, sound_text, (WINDOW_WIDTH - 200, 80), 
                             scale=0.5, color=sound_color, thickness=2)
         
+        # Gesture control status indicator
+        if gesture_control:
+            gesture_text = "🤲 GESTURE"
+            gesture_color = GREEN
+        else:
+            gesture_text = "⌨️ KEYBOARD"
+            gesture_color = BLUE
+        
+        self.draw_text_opencv(frame, gesture_text, (WINDOW_WIDTH - 220, 120), 
+                            scale=0.5, color=gesture_color, thickness=2)
+        
         # Controls hint
-        controls_text = "SPACE: Jump | P: Pause | M: Mute | Q: Quit"
+        if gesture_control:
+            controls_text = "G: Toggle Control | P: Pause | M: Mute | Q: Quit"
+        else:
+            controls_text = "SPACE: Jump | G: Gesture | P: Pause | M: Mute | Q: Quit"
         self.draw_text_opencv(frame, controls_text, (20, WINDOW_HEIGHT - 30), 
                             scale=0.4, color=WHITE, thickness=1)
         

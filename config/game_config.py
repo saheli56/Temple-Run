@@ -53,6 +53,26 @@ MUSIC_VOLUME = 0.5
 ENABLE_SOUND_EFFECTS = True
 ENABLE_BACKGROUND_MUSIC = True
 
+# Gesture Control Configuration
+ENABLE_GESTURE_CONTROL = True
+GESTURE_CAMERA_INDEX = 0
+GESTURE_CONFIDENCE_THRESHOLD = 0.7
+GESTURE_COOLDOWN_TIME = 0.5
+SHOW_GESTURE_DEBUG = True
+SHOW_CAMERA_FEED = True
+GESTURE_CAMERA_WIDTH = 320
+GESTURE_CAMERA_HEIGHT = 240
+
+# IP Webcam Configuration (for phone camera)
+# Set this to your phone's IP Webcam URL, e.g., "http://192.168.1.100:8080"
+# Leave as None to prompt user for URL when using OpenCV gesture control
+IP_WEBCAM_URL = "http://100.102.121.116:8080"
+
+# OpenCV Gesture Control Settings
+OPENCV_GESTURE_CONFIDENCE_THRESHOLD = 0.6
+OPENCV_GESTURE_COOLDOWN = 0.5
+OPENCV_MIN_CONTOUR_AREA = 3000
+
 # Sound file names
 SOUND_FILES = {
     'jump': 'jump.wav',
