@@ -11,7 +11,7 @@ import os
 from config.game_config import *
 from modules.player import Player
 from modules.obstacle import ObstacleManager
-from modules.background import ParallaxBackground
+from modules.background_simple import ParallaxBackground
 from modules.ui import GameUI
 from utils.game_utils import *
 
@@ -36,8 +36,7 @@ class TempleRunGame:
         self.init_sounds()
         
         # Load high score
-        self.high_score, self.total_coins_collected = load_high_score()
-        
+        self.high_score, self.total_coins_collected = load_high_score()        
         # Camera effects
         self.camera_shake = 0
         self.screen_flash = 0
@@ -46,17 +45,28 @@ class TempleRunGame:
         self.last_time = time.time()
         
     def init_sounds(self):
-        """Initialize sound effects"""
-        # Load sounds (placeholder - replace with actual sound files)
+        """Initialize sound effects and background music"""
+        print("🎵 Initializing sound system...")
+        
+        # Load sound effects
         sound_files = {
             'jump': os.path.join(SOUNDS_DIR, 'jump.wav'),
             'coin': os.path.join(SOUNDS_DIR, 'coin.wav'),
             'collision': os.path.join(SOUNDS_DIR, 'collision.wav'),
-            'game_over': os.path.join(SOUNDS_DIR, 'game_over.wav')
+            'game_over': os.path.join(SOUNDS_DIR, 'gameover.wav'),
+            'start': os.path.join(SOUNDS_DIR, 'start.wav')
         }
         
         for name, filepath in sound_files.items():
             self.sound_manager.load_sound(name, filepath)
+          # Load and start background music
+        music_file = os.path.join(SOUNDS_DIR, 'background_music.mp3')
+        if os.path.exists(music_file):
+            self.sound_manager.play_music(music_file, loop=-1, fade_in=2000)
+        else:
+            print("⚠ Warning: Background music file not found")
+        
+        print("✓ Sound system ready!")
     
     def reset_game(self):
         """Reset game state for new game"""
@@ -78,19 +88,30 @@ class TempleRunGame:
                     if event.key == pygame.K_SPACE:
                         self.state = STATE_PLAYING
                         self.reset_game()
+                        self.sound_manager.play_sound('start')
                 
                 elif self.state == STATE_PLAYING:
                     if event.key == pygame.K_SPACE:
                         if self.player.jump():
-                            self.sound_manager.play_sound('jump')
+                            self.sound_manager.play_sound('jump', prevent_overlap=True)
                     elif event.key == pygame.K_p:
                         self.state = STATE_PAUSED
+                        self.sound_manager.pause_music()
+                    elif event.key == pygame.K_m:
+                        # Toggle mute for all audio
+                        muted = self.sound_manager.toggle_all_mute()
+                        print(f"🔇 Audio {'muted' if muted else 'unmuted'}")
                     elif event.key == pygame.K_q:
                         return False
                 
                 elif self.state == STATE_PAUSED:
                     if event.key == pygame.K_p:
                         self.state = STATE_PLAYING
+                        self.sound_manager.resume_music()
+                    elif event.key == pygame.K_m:
+                        # Toggle mute for all audio
+                        muted = self.sound_manager.toggle_all_mute()
+                        print(f"🔇 Audio {'muted' if muted else 'unmuted'}")
                     elif event.key == pygame.K_q:
                         return False
                 
@@ -98,6 +119,11 @@ class TempleRunGame:
                     if event.key == pygame.K_s:
                         self.state = STATE_PLAYING
                         self.reset_game()
+                        self.sound_manager.play_sound('start')
+                    elif event.key == pygame.K_m:
+                        # Toggle mute for all audio
+                        muted = self.sound_manager.toggle_all_mute()
+                        print(f"🔇 Audio {'muted' if muted else 'unmuted'}")
                     elif event.key == pygame.K_q:
                         return False
         
@@ -110,13 +136,12 @@ class TempleRunGame:
             self.player.update(dt)
             self.obstacle_manager.update(dt)
             self.background.update(dt)
-            
-            # Check collisions
+              # Check collisions
             if self.obstacle_manager.check_collision(self.player.get_bounds()):
                 self.game_over = True
                 self.state = STATE_GAME_OVER
-                self.sound_manager.play_sound('collision')
-                self.sound_manager.play_sound('game_over')
+                self.sound_manager.play_sound('collision', volume=0.8)
+                self.sound_manager.play_sound('game_over', volume=0.6)
                 
                 # Add screen shake and flash effects
                 self.camera_shake = CAMERA_SHAKE_INTENSITY
@@ -135,7 +160,7 @@ class TempleRunGame:
             collected_coins = self.obstacle_manager.check_coin_collection(self.player.get_bounds())
             if collected_coins > 0:
                 self.coins_collected += collected_coins
-                self.sound_manager.play_sound('coin')
+                self.sound_manager.play_sound('coin', volume=0.7, prevent_overlap=False)
         
         # Update camera effects
         if self.camera_shake > 0:
@@ -167,11 +192,12 @@ class TempleRunGame:
             if not self.game_over:
                 frame = self.player.draw(frame)
             frame = self.obstacle_manager.draw(frame)
-            
-            # Draw HUD
+              # Draw HUD
             score = self.obstacle_manager.get_score()
             speed = self.obstacle_manager.speed_multiplier
-            frame = self.ui.draw_game_hud(frame, score, self.coins_collected, speed)
+            sound_muted = self.sound_manager.sound_muted or self.sound_manager.music_muted
+            frame = self.ui.draw_game_hud(frame, score, self.coins_collected, speed, 
+                                        lives=3, sound_muted=sound_muted)
             
             # Apply camera shake
             if self.camera_shake > 0:

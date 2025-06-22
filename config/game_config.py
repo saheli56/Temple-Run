@@ -38,9 +38,9 @@ OBSTACLE_SPAWN_TIME = 1.5
 OBSTACLE_MIN_GAP = 300
 OBSTACLE_MAX_GAP = 500
 
-# Parallax Background Layers
-BACKGROUND_LAYERS = 4
-BACKGROUND_SPEEDS = [1, 2, 4, 6]  # Different scroll speeds for depth
+# Parallax Background Layers - Enhanced Temple/Jungle Environment
+BACKGROUND_LAYERS = 6
+BACKGROUND_SPEEDS = [0.2, 0.5, 1.0, 2.0, 4.0, 6.0]  # Different scroll speeds for depth
 
 # Coin Configuration
 COIN_SPAWN_CHANCE = 0.3
@@ -50,6 +50,19 @@ COIN_ANIMATION_SPEED = 0.2
 # Sound Configuration
 SOUND_VOLUME = 0.7
 MUSIC_VOLUME = 0.5
+ENABLE_SOUND_EFFECTS = True
+ENABLE_BACKGROUND_MUSIC = True
+
+# Sound file names
+SOUND_FILES = {
+    'jump': 'jump.wav',
+    'coin': 'coin.wav', 
+    'collision': 'collision.wav',
+    'game_over': 'gameover.wav',
+    'start': 'start.wav'
+}
+
+MUSIC_FILE = 'background_music.mp3'
 
 # Camera Effects
 CAMERA_SHAKE_INTENSITY = 5

@@ -40,29 +40,41 @@ class GameUI:
         surface.blit(text_surface, position)
         return surface
     
-    def draw_game_hud(self, frame, score, coins, speed_multiplier, lives=3):
-        """Draw the main game HUD"""
+    def draw_game_hud(self, frame, score, coins, speed_multiplier, lives=3, sound_muted=False):
+        """Draw the main game HUD with sound status"""
         # Score
         score_text = f"Score: {score:,}"
         self.draw_text_opencv(frame, score_text, self.score_pos, scale=0.8, thickness=2)
         
         # Coins
         coins_text = f"Coins: {coins}"
-        self.draw_text_opencv(frame, coins_text, self.coins_pos, scale=0.6, 
-                            color=YELLOW, thickness=2)
+        self.draw_text_opencv(frame, coins_text, self.coins_pos, scale=0.7, color=YELLOW, thickness=2)
         
-        # Speed indicator
+        # Speed
         speed_text = f"Speed: {speed_multiplier:.1f}x"
-        speed_color = GREEN if speed_multiplier < 2.0 else ORANGE if speed_multiplier < 3.0 else RED
-        self.draw_text_opencv(frame, speed_text, self.speed_pos, scale=0.6, 
-                            color=speed_color, thickness=2)
+        speed_color = GREEN if speed_multiplier <= 2.0 else ORANGE if speed_multiplier <= 3.0 else RED
+        self.draw_text_opencv(frame, speed_text, self.speed_pos, scale=0.6, color=speed_color, thickness=2)
         
         # Lives (hearts)
-        heart_size = 20
+        heart_x = WINDOW_WIDTH - 150
         for i in range(lives):
-            heart_x = WINDOW_WIDTH - 40 - (i * 30)
-            heart_y = 30
-            self.draw_heart(frame, (heart_x, heart_y), heart_size)
+            cv2.circle(frame, (heart_x + i * 30, 40), 10, RED, -1)
+        
+        # Sound status indicator
+        if sound_muted:
+            sound_text = "🔇 MUTED"
+            sound_color = RED
+        else:
+            sound_text = "🔊"
+            sound_color = GREEN
+        
+        self.draw_text_opencv(frame, sound_text, (WINDOW_WIDTH - 200, 80), 
+                            scale=0.5, color=sound_color, thickness=2)
+        
+        # Controls hint
+        controls_text = "SPACE: Jump | P: Pause | M: Mute | Q: Quit"
+        self.draw_text_opencv(frame, controls_text, (20, WINDOW_HEIGHT - 30), 
+                            scale=0.4, color=WHITE, thickness=1)
         
         return frame
     

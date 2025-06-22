@@ -171,40 +171,181 @@ def clamp(value, min_val, max_val):
     return max(min_val, min(max_val, value))
 
 class SoundManager:
-    """Enhanced sound management"""
+    """Enhanced sound management with mute functionality and better error handling"""
     def __init__(self):
         self.sounds = {}
         self.music_playing = False
+        self.sound_muted = False
+        self.music_muted = False
+        self.current_music_file = None
+        self.sound_channels = {}
+        
+        # Initialize pygame mixer if not already done
+        self.init_mixer()
+        
+    def init_mixer(self):
+        """Initialize pygame mixer with optimal settings"""
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=512)
+                pygame.mixer.init()
+            print("✓ Sound system initialized successfully")
+        except Exception as e:
+            print(f"⚠ Warning: Could not initialize sound system: {e}")
         
     def load_sound(self, name, filepath):
-        """Load a sound file"""
+        """Load a sound file with error handling"""
         try:
-            sound = pygame.mixer.Sound(filepath)
-            sound.set_volume(SOUND_VOLUME)
-            self.sounds[name] = sound
-        except:
-            # Create placeholder sound if file doesn't exist
+            if os.path.exists(filepath):
+                sound = pygame.mixer.Sound(filepath)
+                sound.set_volume(SOUND_VOLUME)
+                self.sounds[name] = sound
+                print(f"✓ Loaded sound: {name}")
+            else:
+                print(f"⚠ Warning: Sound file not found: {filepath}")
+                self.sounds[name] = None
+        except Exception as e:
+            print(f"⚠ Warning: Could not load sound {name}: {e}")
             self.sounds[name] = None
     
-    def play_sound(self, name):
-        """Play a sound effect"""
-        if name in self.sounds and self.sounds[name]:
-            self.sounds[name].play()
-    
-    def play_music(self, filepath, loop=-1):
-        """Play background music"""
+    def play_sound(self, name, volume=None, prevent_overlap=False):
+        """Play a sound effect with advanced options"""
+        if self.sound_muted or name not in self.sounds or not self.sounds[name]:
+            return None
+            
         try:
-            pygame.mixer.music.load(filepath)
-            pygame.mixer.music.set_volume(MUSIC_VOLUME)
-            pygame.mixer.music.play(loop)
-            self.music_playing = True
-        except:
-            pass
+            sound = self.sounds[name]
+            
+            # Stop previous instance if preventing overlap
+            if prevent_overlap and name in self.sound_channels:
+                if self.sound_channels[name].get_busy():
+                    self.sound_channels[name].stop()
+            
+            # Set custom volume if provided
+            if volume is not None:
+                sound.set_volume(volume)
+            
+            # Play sound and store channel reference
+            channel = sound.play()
+            if channel:
+                self.sound_channels[name] = channel
+            
+            return channel
+        except Exception as e:
+            print(f"⚠ Warning: Could not play sound {name}: {e}")
+            return None
     
-    def stop_music(self):
-        """Stop background music"""
-        pygame.mixer.music.stop()
-        self.music_playing = False
+    def play_music(self, filepath, loop=-1, fade_in=0):
+        """Play background music with fade-in option"""
+        if self.music_muted:
+            return
+            
+        try:
+            if os.path.exists(filepath):
+                pygame.mixer.music.load(filepath)
+                pygame.mixer.music.set_volume(MUSIC_VOLUME)
+                
+                if fade_in > 0:
+                    pygame.mixer.music.play(loop, fade_ms=fade_in)
+                else:
+                    pygame.mixer.music.play(loop)
+                
+                self.music_playing = True
+                self.current_music_file = filepath
+                print(f"✓ Playing music: {os.path.basename(filepath)}")
+            else:
+                print(f"⚠ Warning: Music file not found: {filepath}")
+        except Exception as e:
+            print(f"⚠ Warning: Could not play music: {e}")
+    
+    def stop_music(self, fade_out=0):
+        """Stop background music with optional fade-out"""
+        try:
+            if fade_out > 0:
+                pygame.mixer.music.fadeout(fade_out)
+            else:
+                pygame.mixer.music.stop()
+            
+            self.music_playing = False
+            self.current_music_file = None
+        except Exception as e:
+            print(f"⚠ Warning: Could not stop music: {e}")
+    
+    def pause_music(self):
+        """Pause background music"""
+        try:
+            pygame.mixer.music.pause()
+        except Exception as e:
+            print(f"⚠ Warning: Could not pause music: {e}")
+    
+    def resume_music(self):
+        """Resume paused music"""
+        try:
+            pygame.mixer.music.unpause()
+        except Exception as e:
+            print(f"⚠ Warning: Could not resume music: {e}")
+    
+    def toggle_sound_mute(self):
+        """Toggle sound effects mute"""
+        self.sound_muted = not self.sound_muted
+        status = "muted" if self.sound_muted else "unmuted"
+        print(f"🔇 Sound effects {status}")
+        return self.sound_muted
+    
+    def toggle_music_mute(self):
+        """Toggle music mute"""
+        self.music_muted = not self.music_muted
+        
+        if self.music_muted:
+            pygame.mixer.music.set_volume(0)
+            print("🔇 Music muted")
+        else:
+            pygame.mixer.music.set_volume(MUSIC_VOLUME)
+            print("🔊 Music unmuted")
+        
+        return self.music_muted
+    
+    def toggle_all_mute(self):
+        """Toggle all audio mute"""
+        # If either is unmuted, mute both
+        if not self.sound_muted or not self.music_muted:
+            self.sound_muted = True
+            self.music_muted = True
+            pygame.mixer.music.set_volume(0)
+            print("🔇 All audio muted")
+            return True
+        else:
+            self.sound_muted = False
+            self.music_muted = False
+            pygame.mixer.music.set_volume(MUSIC_VOLUME)
+            print("🔊 All audio unmuted")
+            return False
+    
+    def set_sound_volume(self, volume):
+        """Set master sound effects volume (0.0 to 1.0)"""
+        volume = max(0.0, min(1.0, volume))
+        for sound in self.sounds.values():
+            if sound:
+                sound.set_volume(volume)
+    
+    def set_music_volume(self, volume):
+        """Set music volume (0.0 to 1.0)"""
+        volume = max(0.0, min(1.0, volume))
+        pygame.mixer.music.set_volume(volume)
+    
+    def is_music_playing(self):
+        """Check if music is currently playing"""
+        return pygame.mixer.music.get_busy() and self.music_playing
+    
+    def get_sound_status(self):
+        """Get current sound system status"""
+        return {
+            'sound_muted': self.sound_muted,
+            'music_muted': self.music_muted,
+            'music_playing': self.is_music_playing(),
+            'current_music': os.path.basename(self.current_music_file) if self.current_music_file else None,
+            'loaded_sounds': list(self.sounds.keys())
+        }
 
 # Global sound manager instance
 sound_manager = SoundManager()
